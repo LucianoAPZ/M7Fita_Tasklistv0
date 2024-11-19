@@ -12,22 +12,36 @@
         $(document).ready(function() {
             var dialog, form;
 
+            function saveTasksToLocalStorage() {
+                var tasks = [];
+                $("#accordion .task").each(function() {
+                    var taskTitle = $(this).find(".titleTask").text();
+                    var taskText = $(this).find(".textTask").text();
+                    tasks.push({ title: taskTitle, text: taskText });
+                });
+                localStorage.setItem("tasks", JSON.stringify(tasks));
+            }
+
+            function loadTasksFromLocalStorage() {
+                var tasks = JSON.parse(localStorage.getItem("tasks"));
+                if (tasks) {
+                    tasks.forEach(function(task) {
+                        $("#accordion").append("<li class='task'> <h3 class='titleTask'>" + task.title + "</h3> <div id='divTask'> <p class='textTask'>" + task.text + "</p><div id='divButton'><button class='edit-task buttonClass'>Edita</button> <button class='delete-task buttonClass'>Elimina</button></div></div></li>");
+                    });
+                    $("#accordion").accordion("refresh");
+                }
+            }
+
             function addTask() {
-                // Guarda el valor del input con la id de "task"
                 var taskTitle = $("#task").val();
                 var taskText = $("#descripcio").val();
-                // Verifica que no está vacío
                 if (taskText && taskTitle) {
-                    // Lo añade a la lista con los botones de editar y eliminar
                     $("#accordion").append("<li class='task'> <h3 class='titleTask'>" + taskTitle + "</h3> <div id='divTask'> <p class='textTask'>" + taskText + "</p><div id='divButton'><button class='edit-task buttonClass'>Edita</button> <button class='delete-task buttonClass'>Elimina</button></div></div></li>");
-                    // Refresca el acordeón para incluir el nuevo elemento
                     $("#accordion").accordion("refresh");
-                    // Cierra el diálogo
                     dialog.dialog("close");
-
-                    // Añade manejadores de eventos para los nuevos botones
                     $(".edit-task").off("click").on("click", editTask);
                     $(".delete-task").off("click").on("click", deleteTask);
+                    saveTasksToLocalStorage();
                 }
             }
 
@@ -36,11 +50,9 @@
                 var taskTitle = taskItem.find(".titleTask").text();
                 var taskText = taskItem.find(".textTask").text();
                 
-                // Reemplazamos el contenido del <li> con campos de entrada para editar
                 taskItem.html("<h3 class='titleTask'><input type='text' value='" + taskTitle + "' class='edit-title'></h3><div id='divTask'><textarea class='edit-text'>" + taskText + "</textarea><div id='divButton'><button class='save-task buttonClass'>Guardar</button> <button class='cancel-task buttonClass'>Cancelar</button></div></div>");
                 $("#accordion").accordion("refresh");
 
-                // Añade manejadores de eventos para los nuevos botones de guardar y cancelar
                 $(".save-task").off("click").on("click", function() {
                     var newTitle = taskItem.find(".edit-title").val();
                     var newText = taskItem.find(".edit-text").val();
@@ -48,6 +60,7 @@
                     $("#accordion").accordion("refresh");
                     $(".edit-task").off("click").on("click", editTask);
                     $(".delete-task").off("click").on("click", deleteTask);
+                    saveTasksToLocalStorage();
                 });
 
                 $(".cancel-task").off("click").on("click", function() {
@@ -61,39 +74,36 @@
             function deleteTask() {
                 $(this).closest("li").remove();
                 $("#accordion").accordion("refresh");
+                saveTasksToLocalStorage();
             }
 
             dialog = $("#dialog-form").dialog({
-                autoOpen: false, // Hará que no se inicie automáticamente
+                autoOpen: false,
                 width: 350,
-                modal: true, // Bloquea interacciones externas a la ventana
+                modal: true,
                 buttons: {
                     "Afegir tasca": addTask,
                     Cancel·la: function() {
-                        dialog.dialog("close"); // Cierra diálogo
+                        dialog.dialog("close");
                     }
                 },
-                // Cuando se cierre, resetea el formulario
                 close: function() {
                     form[0].reset();
                 }
             });
 
-            // Encuentra el formulario para enviar el formulario
             form = dialog.find("form").on("submit", function(event) {
-                event.preventDefault(); // Previene la recarga de la página
-                addTask(); // Llama a la función
+                event.preventDefault();
+                addTask();
             });
 
-            // Inicializa el botón como un botón de jQuery
             $("#add-task").button().on("click", function() {
-                dialog.dialog("open"); // Abre diálogo
+                dialog.dialog("open");
             });
 
-            // Inicializa el acordeón
             $("#accordion").accordion();
 
-            // Añade manejadores de eventos para los botones existentes
+            loadTasksFromLocalStorage();
             $(".edit-task").on("click", editTask);
             $(".delete-task").on("click", deleteTask);
         });
@@ -148,12 +158,3 @@
     </div>
 </body>
 </html>
-
-
-<!--<script type="text/javascript">
-        var tasca = prompt("Tasca?");
-          // creem element jQuery
-        var jquery_elem = $("<li>" + tasca + "</li>");
-        // l'afegim a una llista de la nostra pàgina
-        $("ul").append(jquery_elem);
-    </script>-->
