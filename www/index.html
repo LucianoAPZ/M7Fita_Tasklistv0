@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskList</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.0/jquery-ui.js"></script>
+    <script>
+        $(document).ready(function() {
+            var dialog, form;
+
+            function addTask() {
+                // Guarda el valor del input con la id de "task"
+                var taskTitle = $("#task").val();
+                var taskText = $("#descripcio").val();
+                // Verifica que no está vacío
+                if (taskText && taskTitle) {
+                    // Lo añade a la lista con los botones de editar y eliminar
+                    $("#accordion").append("<li class='task'> <h3 class='titleTask'>" + taskTitle + "</h3> <div id='divTask'> <p class='textTask'>" + taskText + "</p>q</div></li>");
+                    // Refresca el acordeón para incluir el nuevo elemento
+                    $("#accordion").accordion("refresh");
+                    // Cierra el diálogo
+                    dialog.dialog("close");
+                }
+            }
+
+            dialog = $("#dialog-form").dialog({
+                autoOpen: false, // Hará que no se inicie automáticamente
+                width: 350,
+                modal: true, // Bloquea interacciones externas a la ventana
+                buttons: {
+                    "Afegir tasca": addTask,
+                    Cancel·la: function() {
+                        dialog.dialog("close"); // Cierra diálogo
+                    }
+                },
+                // Cuando se cierre, resetea el formulario
+                close: function() {
+                    form[0].reset();
+                }
+            });
+
+            // Encuentra el formulario para enviar el formulario
+            form = dialog.find("form").on("submit", function(event) {
+                event.preventDefault(); // Previene la recarga de la página
+                addTask(); // Llama a la función
+            });
+
+            // Inicializa el botón como un botón de jQuery
+            $("#add-task").button().on("click", function() {
+                dialog.dialog("open"); // Abre diálogo
+            });
+
+            // Inicializa el acordeón
+            $("#accordion").accordion();
+        });
+    </script>
+    <style>
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label, input {
+            margin-bottom: 2%;
+        }
+        button {
+            margin-top: 2%;
+            height: fit-content;
+        }
+        p {
+            width: 79%;
+        }
+        #divTask, #divButton {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .buttonClass {
+            margin-top: unset;
+        }
+        #divTask #divButton{
+            width: 21%;
+        }
+        #divButton {
+            width: 25%;
+        }
+        textarea{
+            width: 70%;
+        }
+    </style>
+</head>
+<body>
+    <h1>TaskList</h1>
+    <ul id="accordion">
+    </ul>
+    <button id="add-task">Create new task</button>
+    
+    <div id="dialog-form" title="Afegir nova tasca" style="display:none;">
+        <form>
+            <label for="task">Nom de la tasca</label>
+            <input type="text" name="task" id="task" class="text ui-widget-content ui-corner-all">
+            <label for="descripcio">Descripcio</label>
+            <input type="text" name="descripcio" id="descripcio" class="text ui-widget-content ui-corner-all">
+        </form>
+    </div>
+</body>
+</html>
+
+
+<!--<script type="text/javascript">
+        var tasca = prompt("Tasca?");
+          // creem element jQuery
+        var jquery_elem = $("<li>" + tasca + "</li>");
+        // l'afegim a una llista de la nostra pàgina
+        $("ul").append(jquery_elem);
+    </script>-->

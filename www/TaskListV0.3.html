@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskList</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.0/jquery-ui.js"></script>
+    <script>
+        $(document).ready(function() {
+            var dialog, form;
+
+            function saveTasksToLocalStorage() {
+                var tasks = [];
+                $("#accordion .task").each(function() {
+                    var taskTitle = $(this).find(".titleTask").text();
+                    var taskText = $(this).find(".textTask").text();
+                    tasks.push({ title: taskTitle, text: taskText });
+                });
+                localStorage.setItem("tasks", JSON.stringify(tasks));
+            }
+
+            function loadTasksFromLocalStorage() {
+                var tasks = JSON.parse(localStorage.getItem("tasks"));
+                if (tasks) {
+                    tasks.forEach(function(task) {
+                        $("#accordion").append("<li class='task'> <h3 class='titleTask'>" + task.title + "</h3> <div id='divTask'> <p class='textTask'>" + task.text + "</p><div id='divButton'><button class='edit-task buttonClass'>Edita</button> <button class='delete-task buttonClass'>Elimina</button></div></div></li>");
+                    });
+                    $("#accordion").accordion("refresh");
+                }
+            }
+
+            function addTask() {
+                var taskTitle = $("#task").val();
+                var taskText = $("#descripcio").val();
+                if (taskText && taskTitle) {
+                    $("#accordion").append("<li class='task'> <h3 class='titleTask'>" + taskTitle + "</h3> <div id='divTask'> <p class='textTask'>" + taskText + "</p><div id='divButton'><button class='edit-task buttonClass'>Edita</button> <button class='delete-task buttonClass'>Elimina</button></div></div></li>");
+                    $("#accordion").accordion("refresh");
+                    dialog.dialog("close");
+                    $(".edit-task").off("click").on("click", editTask);
+                    $(".delete-task").off("click").on("click", deleteTask);
+                    saveTasksToLocalStorage();
+                }
+            }
+
+            function editTask() {
+                var taskItem = $(this).closest("li");
+                var taskTitle = taskItem.find(".titleTask").text();
+                var taskText = taskItem.find(".textTask").text();
+                
+                taskItem.html("<h3 class='titleTask'><input type='text' value='" + taskTitle + "' class='edit-title'></h3><div id='divTask'><textarea class='edit-text'>" + taskText + "</textarea><div id='divButton'><button class='save-task buttonClass'>Guardar</button> <button class='cancel-task buttonClass'>Cancelar</button></div></div>");
+                $("#accordion").accordion("refresh");
+
+                $(".save-task").off("click").on("click", function() {
+                    var newTitle = taskItem.find(".edit-title").val();
+                    var newText = taskItem.find(".edit-text").val();
+                    taskItem.html("<h3 class='titleTask'>" + newTitle + "</h3><div id='divTask'><p class='textTask'>" + newText + "</p><div id='divButton'><button class='edit-task buttonClass'>Edita</button> <button class='delete-task buttonClass'>Elimina</button></div></div>");
+                    $("#accordion").accordion("refresh");
+                    $(".edit-task").off("click").on("click", editTask);
+                    $(".delete-task").off("click").on("click", deleteTask);
+                    saveTasksToLocalStorage();
+                });
+
+                $(".cancel-task").off("click").on("click", function() {
+                    taskItem.html("<h3 class='titleTask'>" + taskTitle + "</h3><div id='divTask'><p class='textTask'>" + taskText + "</p><div id='divButton'><button class='edit-task buttonClass'>Edita</button> <button class='delete-task buttonClass'>Elimina</button></div></div>");
+                    $("#accordion").accordion("refresh");
+                    $(".edit-task").off("click").on("click", editTask);
+                    $(".delete-task").off("click").on("click", deleteTask);
+                });
+            }
+
+            function deleteTask() {
+                $(this).closest("li").remove();
+                $("#accordion").accordion("refresh");
+                saveTasksToLocalStorage();
+            }
+
+            dialog = $("#dialog-form").dialog({
+                autoOpen: false,
+                width: 350,
+                modal: true,
+                buttons: {
+                    "Afegir tasca": addTask,
+                    Cancel·la: function() {
+                        dialog.dialog("close");
+                    }
+                },
+                close: function() {
+                    form[0].reset();
+                }
+            });
+
+            form = dialog.find("form").on("submit", function(event) {
+                event.preventDefault();
+                addTask();
+            });
+
+            $("#add-task").button().on("click", function() {
+                dialog.dialog("open");
+            });
+
+            $("#accordion").accordion();
+
+            loadTasksFromLocalStorage();
+            $(".edit-task").on("click", editTask);
+            $(".delete-task").on("click", deleteTask);
+        });
+    </script>
+    <style>
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label, input {
+            margin-bottom: 2%;
+        }
+        button {
+            margin-top: 2%;
+            height: fit-content;
+        }
+        p {
+            width: 79%;
+        }
+        #divTask, #divButton {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .buttonClass {
+            margin-top: unset;
+        }
+        #divTask #divButton{
+            width: 21%;
+        }
+        #divButton {
+            width: 25%;
+        }
+        textarea{
+            width: 70%;
+        }
+    </style>
+</head>
+<body>
+    <h1>TaskList</h1>
+    <ul id="accordion">
+    </ul>
+    <button id="add-task">Create new task</button>
+    
+    <div id="dialog-form" title="Afegir nova tasca" style="display:none;">
+        <form>
+            <label for="task">Nom de la tasca</label>
+            <input type="text" name="task" id="task" class="text ui-widget-content ui-corner-all">
+            <label for="descripcio">Descripcio</label>
+            <input type="text" name="descripcio" id="descripcio" class="text ui-widget-content ui-corner-all">
+        </form>
+    </div>
+</body>
+</html>
