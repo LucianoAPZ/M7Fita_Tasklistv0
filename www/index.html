@@ -19,12 +19,48 @@
                 // Verifica que no está vacío
                 if (taskText && taskTitle) {
                     // Lo añade a la lista con los botones de editar y eliminar
-                    $("#accordion").append("<li class='task'> <h3 class='titleTask'>" + taskTitle + "</h3> <div id='divTask'> <p class='textTask'>" + taskText + "</p>q</div></li>");
+                    $("#accordion").append("<li class='task'> <h3 class='titleTask'>" + taskTitle + "</h3> <div id='divTask'> <p class='textTask'>" + taskText + "</p><div id='divButton'><button class='edit-task buttonClass'>Edita</button> <button class='delete-task buttonClass'>Elimina</button></div></div></li>");
                     // Refresca el acordeón para incluir el nuevo elemento
                     $("#accordion").accordion("refresh");
                     // Cierra el diálogo
                     dialog.dialog("close");
+
+                    // Añade manejadores de eventos para los nuevos botones
+                    $(".edit-task").off("click").on("click", editTask);
+                    $(".delete-task").off("click").on("click", deleteTask);
                 }
+            }
+
+            function editTask() {
+                var taskItem = $(this).closest("li");
+                var taskTitle = taskItem.find(".titleTask").text();
+                var taskText = taskItem.find(".textTask").text();
+                
+                // Reemplazamos el contenido del <li> con campos de entrada para editar
+                taskItem.html("<h3 class='titleTask'><input type='text' value='" + taskTitle + "' class='edit-title'></h3><div id='divTask'><textarea class='edit-text'>" + taskText + "</textarea><div id='divButton'><button class='save-task buttonClass'>Guardar</button> <button class='cancel-task buttonClass'>Cancelar</button></div></div>");
+                $("#accordion").accordion("refresh");
+
+                // Añade manejadores de eventos para los nuevos botones de guardar y cancelar
+                $(".save-task").off("click").on("click", function() {
+                    var newTitle = taskItem.find(".edit-title").val();
+                    var newText = taskItem.find(".edit-text").val();
+                    taskItem.html("<h3 class='titleTask'>" + newTitle + "</h3><div id='divTask'><p class='textTask'>" + newText + "</p><div id='divButton'><button class='edit-task buttonClass'>Edita</button> <button class='delete-task buttonClass'>Elimina</button></div></div>");
+                    $("#accordion").accordion("refresh");
+                    $(".edit-task").off("click").on("click", editTask);
+                    $(".delete-task").off("click").on("click", deleteTask);
+                });
+
+                $(".cancel-task").off("click").on("click", function() {
+                    taskItem.html("<h3 class='titleTask'>" + taskTitle + "</h3><div id='divTask'><p class='textTask'>" + taskText + "</p><div id='divButton'><button class='edit-task buttonClass'>Edita</button> <button class='delete-task buttonClass'>Elimina</button></div></div>");
+                    $("#accordion").accordion("refresh");
+                    $(".edit-task").off("click").on("click", editTask);
+                    $(".delete-task").off("click").on("click", deleteTask);
+                });
+            }
+
+            function deleteTask() {
+                $(this).closest("li").remove();
+                $("#accordion").accordion("refresh");
             }
 
             dialog = $("#dialog-form").dialog({
@@ -56,6 +92,10 @@
 
             // Inicializa el acordeón
             $("#accordion").accordion();
+
+            // Añade manejadores de eventos para los botones existentes
+            $(".edit-task").on("click", editTask);
+            $(".delete-task").on("click", deleteTask);
         });
     </script>
     <style>
